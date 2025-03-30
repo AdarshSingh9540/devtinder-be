@@ -2,11 +2,14 @@ const express = require('express');
 const connectDB = require('./utils/database');
 const User = require('./model/userModel');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const app = express();
 require('dotenv').config();
-require('./utils/database');
-app.use(express.json());
 
+
+app.use(express.json());
+app.use(cookieParser());
 app.post('/signup', async (req, res) => {
     try {
         const { firstName, lastName, age, gender, email, password } = req.body;
@@ -40,9 +43,34 @@ app.post('/login',async(req,res)=>{
         if(!isValidPassword){
             return res.status(401).json({message:"Invalid credientials"});
         }
+
+        const jwttoken = await jwt.sign({id:isUser._id},process.env.JWT_SECRET_KEY,{expiresIn:"1h"});
+        res.cookie("token",jwttoken);
         res.status(200).json({message:"Login successful",user:isUser});
     }catch(err){
         res.status(500).json({message:"Error in login",error:err.message});
+    }
+});
+
+app.get('/profile', async(req,res) =>{
+    try{
+        const token = req.cookies.token;
+        if(!token){
+            return res.status(401).json({message:"Unauthorized"});
+
+        }
+
+        const decodeToken =  jwt.verify(token,process.env.JWT_SECRET_KEY);
+        if(!decodeToken){
+            return res.status(401).json({message:"Unauthorized"});
+        }
+        const user = await User.findById(decodeToken.id);
+        if(!user){
+            return res.status(404).json({message:"User not found"});
+        }
+        res.status(200).send({message:"User profile",user});
+    }catch(err){
+        res.status(500).json({message:"Error in fetching profile",error:err.message});
     }
 });
 
