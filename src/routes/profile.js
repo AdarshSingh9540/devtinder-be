@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require('../model/userModel');
 const authMiddleware = require('../middlewares/authMiddleware');
 
-router.get('/profile', authMiddleware, async (req, res) => {
+router.get('/profile/view', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password'); 
     res.status(200).json({ message: 'User profile', user });
@@ -12,17 +12,25 @@ router.get('/profile', authMiddleware, async (req, res) => {
   }
 });
 
-router.put('/update', authMiddleware, async (req, res) => {
+router.patch('/profile/update', authMiddleware, async (req, res) => {
   try {
-    const { firstName, lastName, age } = req.body;
+    const { firstName, lastName, age, gender, email, password } = req.body; 
+    if (email !== undefined || password !== undefined) {
+      return res.status(400).json({ message: 'Email and password updates are not allowed' });
+    }
+
+    if (firstName === undefined && lastName === undefined && age === undefined && gender === undefined) {
+      return res.status(400).json({ message: 'No valid fields provided for update' });
+    }
 
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    user.firstName = firstName || user.firstName;
-    user.lastName = lastName || user.lastName;
-    user.age = age || user.age;
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (age !== undefined) user.age = age;
+    if (gender !== undefined) user.gender = gender;
 
     await user.save();
     res.status(200).json({ message: 'User updated successfully', user });
