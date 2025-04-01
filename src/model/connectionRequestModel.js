@@ -3,6 +3,7 @@ const { default: mongoose } = require("mongoose");
 const connectionRequest = new mongoose.Schema({
     senderUserId:{
         type:mongoose.Schema.Types.ObjectId,
+        ref:'User',
         required:true,
     },
 

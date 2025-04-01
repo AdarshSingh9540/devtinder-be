@@ -4,7 +4,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const User = require('../model/userModel');
 const router = express.Router();
 
-router.post('/send/:status/:receiverUserId',authMiddleware,async(req,res)=>{
+router.post('/send/:status/:receiverUserId',async(req,res)=>{
      try{
           const senderUserId =  req.user._id;
           const receiverUserId = req.params.receiverUserId;
@@ -55,7 +55,7 @@ router.post('/send/:status/:receiverUserId',authMiddleware,async(req,res)=>{
      }
 })
 
-router.post('/request/review/:status/:requestId',authMiddleware,async(req,res)=>{
+router.post('/request/review/:status/:requestId',async(req,res)=>{
      try{
           const {status , requestId} = req.params;
           const logInUser = req.user;
@@ -81,6 +81,26 @@ router.post('/request/review/:status/:requestId',authMiddleware,async(req,res)=>
           res.status(200).json({message:"Connection Request"+status,data});
      }catch(err){
           res.status(400).send("error "+err);
+     }
+})
+
+router.get('/user/requests/received',async(req,res) =>{
+     try{
+          const logInUser = req.user;
+
+          const connectionRequest = await ConnectionRequest.find({
+               receiverUserId:logInUser._id,
+               status:'interested',
+          }).populate(
+               "senderUserId", "firstName lastName age"
+          )
+
+          res.json({
+               message:"Data...",
+               data:connectionRequest
+          });
+     }catch(err){
+          res.status(400).send("error" + err.message);
      }
 })
 module.exports = router;
