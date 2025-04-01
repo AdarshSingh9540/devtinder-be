@@ -103,4 +103,28 @@ router.get('/user/requests/received',async(req,res) =>{
           res.status(400).send("error" + err.message);
      }
 })
+
+router.get('/user/connections',async(req,res)=>{
+     try{
+          const logInUser = req.user;
+
+          const connections = await ConnectionRequest.find({
+               $or: [
+                   {receiverUserId:logInUser._id,status:'accepted'},
+                   {senderUserId:logInUser._id,status:'accepted'}
+               ],
+     }).populate("senderUserId","firstName lastName").populate("receiverUserId","firstName lastName");
+
+     const data = connections.map(row => 
+          row.senderUserId._id.toString() === logInUser._id.toString()
+              ? row.receiverUserId
+              : row.senderUserId
+      );
+
+     res.status(200).json({message:"Connection found successfully",data});
+
+     }catch(err){
+          res.status(400).send("error" + err.message);
+     }
+})
 module.exports = router;

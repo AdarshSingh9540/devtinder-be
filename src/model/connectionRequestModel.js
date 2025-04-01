@@ -10,6 +10,7 @@ const connectionRequest = new mongoose.Schema({
     receiverUserId:{
         type:mongoose.Schema.Types.ObjectId,
         required:true,
+        ref:'User'
     },
 
     status:{
