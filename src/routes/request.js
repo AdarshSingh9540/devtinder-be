@@ -2,6 +2,7 @@ const express = require('express');
 const ConnectionRequest = require('../model/connectionRequestModel');
 const authMiddleware = require('../middlewares/authMiddleware');
 const User = require('../model/userModel');
+const { set } = require('mongoose');
 const router = express.Router();
 
 router.post('/send/:status/:receiverUserId',async(req,res)=>{
@@ -125,6 +126,43 @@ router.get('/user/connections',async(req,res)=>{
 
      }catch(err){
           res.status(400).send("error" + err.message);
+     }
+})
+
+router.get('/feed',async(req,res)=>{
+     try{
+          const limit = parseInt(req.query.limit) || 10;
+          const page = parseInt(req.query.skip) || 1;
+          const skip = (page-1)*limit;
+          const logInUser = req.user;
+          const connection = await ConnectionRequest.find({
+               $or:[
+                    {receiverUserId:logInUser._id},
+                    {senderUserId:logInUser._id}
+               ]
+          }).select('senderUserId receiverUserId');
+          // .populate('receiverUserId' , 'firstName').populate('senderUserId' ,'firstName');
+
+          const hideUser = new Set();
+        connection.forEach((req) => {
+            hideUser.add(req.senderUserId.toString());
+            hideUser.add(req.receiverUserId.toString());
+        });
+
+        const users = await User.find({
+          $and: [{_id:{$nin: Array.from(hideUser)}},
+
+               {_id: {$ne:logInUser._id}},
+          ]
+        }).skip(skip).limit(limit);
+
+        res.status(200).json({
+            message: "All connection requests retrieved successfully",
+            users,
+          //   hideUser: Array.from(hideUser)
+        });
+     }catch(err){
+          res.status(400).send("error "+err.message);
      }
 })
 module.exports = router;
