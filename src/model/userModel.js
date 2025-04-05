@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
           message: "Invalid Email",
         },
       },
-      imgURL: {
+      imgUrl: {
         type: String,
         validate: {
           validator: (value) => validator.isURL(value),
@@ -34,11 +34,11 @@ const userSchema = new mongoose.Schema({
       },
 
     age:{
-        type:Number,
-        min:18
+        type:String,
+        
     },
     gender:{
-        enum:['MALE',"FEMALE","OTHER"],
+        enum:['male',"female","other"],
         type:String,
     },
 

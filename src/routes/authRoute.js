@@ -38,7 +38,7 @@ router.post('/login',async(req,res)=>{
             return res.status(401).json({message:"Invalid credientials"});
         }
         const token = await isUser.getJWT();
-        res.cookie("token",token);
+        res.cookie('token',token,{expires:new Date(Date.now()+3600000),httpOnly:true});
         res.status(200).json({message:"Login successful",user:isUser});
     }catch(err){
         res.status(500).json({message:"Error in login",error:err.message});
@@ -47,7 +47,7 @@ router.post('/login',async(req,res)=>{
 
 router.post('/logout',(req,res) =>{
     res.cookie('token',null,{expires:new Date(Date.now())});
-    res.status(200).json({message:"Logout successful"});
+    res.status(200).json({message:"Logout successful",user});
 })
 
 

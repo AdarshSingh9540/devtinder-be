@@ -129,7 +129,7 @@ router.get('/user/connections',async(req,res)=>{
      }
 })
 
-router.get('/feed',async(req,res)=>{
+router.get('/feed',authMiddleware,async(req,res)=>{
      try{
           const limit = parseInt(req.query.limit) || 10;
           const page = parseInt(req.query.skip) || 1;
