@@ -6,7 +6,7 @@ const authMiddleware = async(req,res,next)=>{
     if(!token){
         return res.status(401).json({message:"Login Required"});
     }
-    const decodeToken = jwt.verify(token,process.env.JWT_SECRET_KEY);
+    const decodeToken = jwt.verify(token,"adarsh");
      const {_id}= decodeToken;
     const user = await User.findById({_id});
     if(!user){
